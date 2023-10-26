@@ -2,12 +2,18 @@
 
 namespace Arr.ModulesSystem
 {
-    public abstract class BaseModule
+    public abstract class BaseModule : IModule
     {
-        public virtual Task OnInitialized() => Task.CompletedTask;
+        protected virtual Task OnInitialized() => Task.CompletedTask;
 
-        public virtual Task OnLoad() => Task.CompletedTask;
+        protected virtual Task OnLoad() => Task.CompletedTask;
 
-        public virtual Task OnUnload() => Task.CompletedTask;
+        protected virtual Task OnUnload() => Task.CompletedTask;
+
+        public Task Initialize() => OnInitialized();
+
+        public Task Load() => OnLoad();
+
+        public Task Unload() => OnUnload();
     }
 }

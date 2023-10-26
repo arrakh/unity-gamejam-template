@@ -68,12 +68,18 @@ namespace Arr.EventsSystem
 
         public TReturn Query<TReturn, TParam>(TParam data) where TParam : struct
         {
+            Debug.Log($"REGISTERED QUERY OF TYPE RETURN {typeof(TReturn)}, PARAM {typeof(TParam)}");
             var queryType = typeof(Tuple<TReturn, TParam>);
             if (paramQueryListeners.TryGetValue(queryType, out var listener) && listener is IQueryProvider<TReturn, TParam> paramQueryListener)
                 return paramQueryListener.OnQuery(data);
             return default;
         }
 
+        //This is made to be consistent with the signature of the register and for reflection purposes
+        public void Unregister<TReturn>(IQueryProvider<TReturn> provider) => Unregister<TReturn>();
+        public void Unregister<TReturn, TParam>(IQueryProvider<TReturn, TParam> provider) where TParam : struct
+            => Unregister<TReturn, TParam>();
+        
         public void Unregister<TReturn>()
         {
             var queryType = typeof(TReturn);
@@ -82,6 +88,7 @@ namespace Arr.EventsSystem
 
         public void Unregister<TReturn, TParam>() where TParam : struct
         {
+            Debug.Log($"UNREGISTERED QUERY OF TYPE RETURN {typeof(TReturn)}, PARAM {typeof(TParam)}");
             var queryType = typeof(Tuple<TReturn, TParam>);
             paramQueryListeners.Remove(queryType);
         }

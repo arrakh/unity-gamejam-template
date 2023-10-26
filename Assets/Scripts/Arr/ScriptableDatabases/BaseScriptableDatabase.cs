@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Arr.SDS
 {
-    public class BaseScriptableDatabase : ScriptableObject, IScriptableData
+    public class BaseScriptableDatabase : ScriptableObject, IScriptableKey
     {
         public string Id => name;
 

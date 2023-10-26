@@ -9,7 +9,7 @@ using UnityEditor;
 
 namespace Arr.SDS
 {
-    public class MasterDatabase : ScriptableDatabase<BaseScriptableDatabase>
+    public class MasterDatabase : ObjectScriptableDatabase<BaseScriptableDatabase>
     {
         [SerializeField] private bool populateOnStart = true;
         
@@ -27,11 +27,7 @@ namespace Arr.SDS
 
             masterDb.Initialize();
             
-            foreach (var db in _items.Values)
-            {
-                Debug.Log($"INITIALIZING {db.name}");
-                db.Initialize();
-            }
+            foreach (var db in _items.Values) db.Initialize();
         }
 
         private static void HandleNullMaster()

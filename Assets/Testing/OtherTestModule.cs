@@ -2,7 +2,7 @@
 using Arr.ModulesSystem;
 using UnityEngine;
 
-namespace DefaultNamespace
+namespace Testing
 {
     public class TestClass
     {
@@ -17,18 +17,11 @@ namespace DefaultNamespace
     public struct TestGenericStruct<T>{}
 
     public class OtherTestModule : BaseModule, 
-        IQueryProvider<TestClass>, 
         IQueryProvider<OtherTestClass>, 
         IQueryProvider<TestClass, TestStruct>,
         IEventListener<TestGenericStruct<TestClass>>
     {
         public int a = 3;
-
-        TestClass IQueryProvider<TestClass>.OnQuery()
-        {
-            GlobalEvent.Fire(new TestStruct(){hoho = "WHAWHAHAW"});
-            return new TestClass() {wat = "hhhhhh"};
-        }
 
         public TestClass OnQuery(TestStruct data)
         {

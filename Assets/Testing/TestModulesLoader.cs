@@ -1,13 +1,15 @@
-﻿using Arr.ModulesSystem;
+﻿using Arr;
+using Arr.ModulesSystem;
 
-namespace DefaultNamespace
+namespace Testing
 {
     public class TestModulesLoader : ModulesLoader
     {
         protected override BaseModule[] Modules => new BaseModule[]
         {
-            new TestModule(),
-            new OtherTestModule()
+            new TestViewModule(),
+            new OtherTestModule(),
+            new TestModule()
         };
     }
 }

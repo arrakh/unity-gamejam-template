@@ -1,6 +1,6 @@
 namespace Arr.SDS
 {
-    public interface IScriptableData
+    public interface IScriptableKey
     {
         public string Id { get; }
     }

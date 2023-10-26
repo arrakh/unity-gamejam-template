@@ -9,7 +9,7 @@ using UnityEditor;
 
 namespace Arr.SDS
 {
-    public class ScriptableDatabase<T> : BaseScriptableDatabase where T : Object
+    public class ObjectScriptableDatabase<T> : BaseScriptableDatabase where T : Object
     {
         [SerializeField] protected List<T> data = new();
 
@@ -32,7 +32,7 @@ namespace Arr.SDS
             foreach (var item in data)
             {
                 string id = item.name;
-                if (item is IScriptableData scriptableData) id = scriptableData.Id;
+                if (item is IScriptableKey scriptableData) id = scriptableData.Id;
                 
                 if (string.IsNullOrWhiteSpace(id)) 
                     throw new Exception($"Trying to Initialize {name} but {item.name} has empty id!");
@@ -41,16 +41,16 @@ namespace Arr.SDS
                     throw new Exception($"Trying to Initialize {GetType()} but {name} has a duplicate id!");
                 
                 _items[id] = item;
-                //Debug.Log($"INITIALIZED {id}");
-                OnDataInitialized(item);
+                
+                OnDataRegistered(item);
             }
             
-            OnAllDataInitialized();
+            OnAllDataRegistered();
         }
 
-        protected virtual void OnDataInitialized(T initializedData) {}
+        protected virtual void OnDataRegistered(T initializedData) {}
         
-        protected virtual void OnAllDataInitialized(){}
+        protected virtual void OnAllDataRegistered(){}
 
         public static T Get(string id)
         {

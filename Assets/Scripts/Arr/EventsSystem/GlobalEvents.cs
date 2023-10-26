@@ -1,6 +1,6 @@
 ﻿namespace Arr.EventsSystem
 {
-    public static class GlobalEvent
+    public static class GlobalEvents
     {
         private static EventHandler _handler = new EventHandler();
 

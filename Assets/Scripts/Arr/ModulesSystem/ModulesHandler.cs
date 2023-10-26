@@ -12,12 +12,12 @@ namespace Arr.ModulesSystem
 {
     public class ModulesHandler
     {
-        private Dictionary<Type, BaseModule> modules;
+        private Dictionary<Type, IModule> modules;
         private EventHandler eventHandler;
 
-        public ModulesHandler(BaseModule[] modules, EventHandler eventHandler)
+        public ModulesHandler(IEnumerable<IModule> modules, EventHandler eventHandler)
         {
-            this.modules = new(modules.Length);
+            this.modules = new();
             foreach (var module in modules)
             {
                 var type = module.GetType();
@@ -34,29 +34,27 @@ namespace Arr.ModulesSystem
             foreach (var module in modules.Values)
             {
                 InjectEvents(module);
-                await module.OnInitialized();
+                await module.Initialize();
             }
 
             foreach (var pair in modules)
                 InjectDependencies(pair.Key, pair.Value);
 
             foreach (var module in modules.Values)
-                await module.OnLoad();
+                await module.Load();
         }
 
-        private void InjectDependencies(Type moduleType, BaseModule instance)
+        private void InjectDependencies(Type moduleType, IModule instance)
         {
             var fields = moduleType.GetFields();
-            Debug.Log($"INJECTING DEPENDENCY FOR {moduleType.Name} WITH {fields.Length}");
 
             foreach (var field in fields)
             {
                 var attrib = field.GetCustomAttribute(typeof(InjectModuleAttribute));
                 if (attrib is not InjectModuleAttribute) continue;
                 var type = field.FieldType;
-                Debug.Log($"GOT INJECT MODULE ATTRIB WITH TYPE {type.Name}");
 
-                if (!typeof(BaseModule).IsAssignableFrom(type))
+                if (!typeof(IModule).IsAssignableFrom(type))
                     throw new Exception($"Trying to inject type {type.Name} but it is not a Module!");
                 
                 if (!modules.TryGetValue(type, out var module))
@@ -67,75 +65,58 @@ namespace Arr.ModulesSystem
             }
         }
 
-        private void InjectEvents(BaseModule module)
+        private void InjectEvents(IModule module)
         {
             var interfaces = module.GetType().GetInterfaces();
             foreach (var i in interfaces)
             {
-                
                 if (!i.IsGenericType) continue;
 
                 var genericType = i.GetGenericTypeDefinition();
                 var args = i.GetGenericArguments();
-                if (genericType == typeof(IEventListener<>) && args.Length == 1) RegisterEventType(module, args[0]);
-                else if (genericType == typeof(IQueryProvider<>)) RegisterQueryType(module, args[0]);
-                else if (genericType == typeof(IQueryProvider<,>) && args.Length == 2) RegisterParamQueryType(module, args[0], args[1]);
+                InvokeEventFunction(nameof(EventHandler.Register), module, genericType, method => method.MakeGenericMethod(args));
             }
         }
 
-        private void RegisterEventType(BaseModule module, Type eventType)
+        private void InvokeEventFunction(string funcName, IModule module, Type genericEventType, Func<MethodInfo, MethodInfo> makeGenericMethodFunc)
         {
             var method = typeof(EventHandler)
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => m.IsGenericMethod && m.Name == nameof(EventHandler.Register)
+                .FirstOrDefault(m => m.IsGenericMethod && m.Name == funcName
                                                        && m.GetParameters().Length == 1
-                                                       && m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IEventListener<>));
-            
-            var genericMethod = method.MakeGenericMethod(eventType);
-            genericMethod.Invoke(eventHandler, new object[] { module });
-        }
-
-        private void RegisterQueryType(BaseModule module, Type returnType)
-        {
-            var method = typeof(EventHandler)
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => m.IsGenericMethod && m.Name == nameof(EventHandler.Register)
-                                                       && m.GetParameters().Length == 1
-                                                       && m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IQueryProvider<>));
+                                                       && m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == genericEventType);
                              
             if (method == null)
             {
-                Debug.LogError("Failed to find the Register method.");
+                Debug.LogError($"Failed to find the Register method of type {genericEventType}.");
                 return;
             }
-            var genericMethod = method.MakeGenericMethod(returnType);
+            
+            var genericMethod = makeGenericMethodFunc.Invoke(method);
 
             genericMethod.Invoke(eventHandler, new object[] { module });
         }
 
-        private void RegisterParamQueryType(BaseModule module, Type returnType, Type paramType)
+        private void UnregisterEvents(IModule module)
         {
-            var method = typeof(EventHandler)
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => m.IsGenericMethod && m.Name == nameof(EventHandler.Register)
-                                                       && m.GetParameters().Length == 1
-                                                       && m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IQueryProvider<,>));
-            Debug.Log($"Register Param Query Type Return {returnType.Name}, Param {paramType.Name}");
-            if (method == null)
+            var interfaces = module.GetType().GetInterfaces();
+            
+            foreach (var i in interfaces)
             {
-                Debug.LogError("Failed to find the Register method.");
-                return;
-            }
-            var genericMethod = method.MakeGenericMethod(returnType, paramType);
+                if (!i.IsGenericType) continue;
 
-            genericMethod.Invoke(eventHandler, new object[] { module });
+                var genericType = i.GetGenericTypeDefinition();
+                var args = i.GetGenericArguments();
+                InvokeEventFunction(nameof(EventHandler.Unregister), module, genericType, method => method.MakeGenericMethod(args));
+            }
         }
 
         public async Task Stop()
         {
             foreach (var module in modules.Values)
             {
-                await module.OnUnload();
+                UnregisterEvents(module);
+                await module.Unload();
             }
         }
     }
