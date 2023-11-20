@@ -27,7 +27,6 @@ namespace Arr.PrefabRegistrySystem
                     throw new Exception($"Trying to add prefabs to registry but {entry.id} is a duplicate that exists on {name}");
 
                 prefabs[entry.id] = entry.prefab;
-                Debug.Log($"REGISTERED {entry.id}");
             } 
         }
 

@@ -31,6 +31,7 @@ namespace Arr.ViewModuleSystem
             }
             
             IsOpen = true;
+            gameObject.SetActive(true);
             OnOpen();
             _eventHandler.Fire(new EventOnViewOpened(){ view = this });
         }
@@ -38,6 +39,7 @@ namespace Arr.ViewModuleSystem
         public void Close()
         {
             IsOpen = false;
+            gameObject.SetActive(false);
             OnClose();
             _eventHandler.Fire(new EventOnViewClosed(){ view = this });
         }

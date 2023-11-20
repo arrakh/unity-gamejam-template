@@ -4,6 +4,7 @@ namespace Arr
 {
     public class ComponentUtility
     {
+        #if UNITY_EDITOR
         static SerializedObject source;
         
         [MenuItem("CONTEXT/Component/Copy Serialized")]
@@ -33,5 +34,6 @@ namespace Arr
             }
             dest.ApplyModifiedProperties();
         }
+        #endif
     }
 }

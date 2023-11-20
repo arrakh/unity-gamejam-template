@@ -31,11 +31,16 @@ namespace Arr.ViewModuleSystem
         public void OnEvent(EventOpenView<T> data)
         {
             view.Open();
+            OnOpen();
         }
 
         public void OnEvent(EventCloseView<T> data)
         {
             view.Close();
+            OnClose();
         }
+        
+        protected virtual void OnOpen(){}
+        protected virtual void OnClose(){}
     }
 }

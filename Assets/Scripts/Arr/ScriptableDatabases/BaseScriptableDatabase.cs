@@ -13,6 +13,7 @@ namespace Arr.SDS
         [ContextMenu("Populate Data")]
         protected void Populate()
         {
+            if (!CanFilter) return;
             OnPrePopulate();
             
             string[] guids = AssetDatabase.FindAssets(Filter);
@@ -26,6 +27,8 @@ namespace Arr.SDS
                 OnPopulatePathFound(path);
             }
         }
+        
+        protected virtual bool CanFilter { get; }
 
         protected virtual string Filter { get; }
         protected virtual void OnPopulatePathFound(string path){}

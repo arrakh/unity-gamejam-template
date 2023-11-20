@@ -16,6 +16,7 @@ namespace Arr.SDS
         protected static Dictionary<string, T> _items = new ();
 
 #if UNITY_EDITOR
+        protected override bool CanFilter => true;
         protected override string Filter => $"t:{typeof(T).FullName}";
         
         protected override void OnPrePopulate() => data.Clear();
